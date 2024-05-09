@@ -1,0 +1,29 @@
+{
+  "scripts": {
+    "dev": "bun run --hot src/index.ts"
+  },
+  "type": "module",
+  "dependencies": {
+    "@hono/zod-validator": "^0.2.1",
+    "arangojs": "^8.8.1",
+    "bcryptjs": "^2.4.3",
+    "dgraph-js-http": "^23.0.0-rc1",
+    "dotenv": "^16.4.5",
+    "hono": "^4.2.9",
+    "hono-rate-limiter": "^0.3.0",
+    "jsonwebtoken": "^9.0.2",
+    "luxon": "^3.4.4",
+    "nodemailer": "^6.9.13",
+    "ts-node": "^10.9.2",
+    "zod": "^3.23.5"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/bun": "latest",
+    "@types/config": "^3.3.4",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/luxon": "^3.4.2",
+    "@types/nodemailer": "^6.4.15",
+    "yup": "^1.4.0"
+  }
+}

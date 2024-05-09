@@ -1,0 +1,72 @@
+version: '3.8'
+volumes:
+    my_app_replicaSet_p_data: {}
+    my_app_replicaSet_p_config_data: {}
+    my_app_replicaSet_s_1_data: {}
+    my_app_replicaSet_s_1_config_data: {}
+    my_app_replicaSet_s_2_data: {}
+    my_app_replicaSet_s_2_config_data: {}
+services:
+    my_app_replicaSet_p:
+        container_name: my_app_replicaSet_p
+        image: mongo:4.4.18
+        ports:
+          - "${DB_PRIMARY_CONTAINER_PORT}:${DB_SERVER_PORT}"
+        command: bash -c "/mongodb_scripts/rs_server.sh"
+        environment:
+            replSet: my_app_replicaSet
+            member0: my_app_replicaSet_p
+            member1: my_app_replicaSet_s_1
+            member2: my_app_replicaSet_s_2
+            dbPort: ${DB_SERVER_PORT}
+            dbName: ${DB_DATABASE_NAME}
+            dbAdminUsername: ${DB_USERNAME}
+            dbUsername: ${CRT_USERNAME}
+            dbPassword: ${DB_PASSWORD}
+            tlsCertificateKeyFile: /security/app.pem
+            tlsCAFile: /security/ca.pem
+            tlsClusterFile: /security/member.pem
+            tlsClusterCAFile: /security/ca.pem
+            localhostUsername: ${LOCALHOST_USERNAME}
+        volumes:
+            - my_app_replicaSet_p_data:/data/db
+            - my_app_replicaSet_p_config_data:/data/configdb
+            - ./mongodb_scripts/rs_server.sh:/mongodb_scripts/rs_server.sh
+            - ./security/ca/ca.crt:/security/ca.pem
+            - ./security/replicaSet_p/app.pem:/security/app.pem
+            - ./security/replicaSet_p_member/app.pem:/security/member.pem
+            - ./security/localhost/app.pem:/security/localhost.pem
+    my_app_replicaSet_s_1:
+        container_name: my_app_replicaSet_s_1
+        image: mongo:4.4.18
+        command: bash -c "/mongodb_scripts/secondary_rs_server.sh"
+        environment:
+            replSet: my_app_replicaSet
+            dbPort: ${DB_SERVER_PORT}
+        ports:
+          - "${DB_SECONDARY_1_CONTAINER_PORT}:${DB_SERVER_PORT}"
+        volumes:
+            - my_app_replicaSet_s_1_data:/data/db
+            - my_app_replicaSet_s_1_config_data:/data/configdb
+            - ./mongodb_scripts/secondary_rs_server.sh:/mongodb_scripts/secondary_rs_server.sh
+            - ./security/ca/ca.crt:/security/ca.pem
+            - ./security/replicaSet_s_1/app.pem:/security/app.pem
+            - ./security/replicaSet_s_1_member/app.pem:/security/member.pem
+            - ./security/localhost/app.pem:/security/localhost.pem
+    my_app_replicaSet_s_2:
+        container_name: my_app_replicaSet_s_2
+        image: mongo:4.4.18
+        command: bash -c "/mongodb_scripts/secondary_rs_server.sh"
+        environment:
+            replSet: my_app_replicaSet
+            dbPort: ${DB_SERVER_PORT}
+        ports:
+          - "${DB_SECONDARY_2_CONTAINER_PORT}:${DB_SERVER_PORT}"
+        volumes:
+            - my_app_replicaSet_s_2_data:/data/db
+            - my_app_replicaSet_s_2_config_data:/data/configdb
+            - ./mongodb_scripts/secondary_rs_server.sh:/mongodb_scripts/secondary_rs_server.sh
+            - ./security/ca/ca.crt:/security/ca.pem
+            - ./security/replicaSet_s_2/app.pem:/security/app.pem
+            - ./security/replicaSet_s_2_member/app.pem:/security/member.pem
+            - ./security/localhost/app.pem:/security/localhost.pem

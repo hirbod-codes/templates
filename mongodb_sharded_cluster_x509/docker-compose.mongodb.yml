@@ -1,0 +1,135 @@
+version: '3.8'
+volumes:
+    mongodb_data: {}
+    mongodb_config_data: {}
+    configServer1_data: {}
+    configServer1_config_data: {}
+    configServer2_data: {}
+    configServer2_config_data: {}
+    configServer3_data: {}
+    configServer3_config_data: {}
+    shardServer1_data: {}
+    shardServer1_config_data: {}
+    shardServer2_data: {}
+    shardServer2_config_data: {}
+    shardServer3_data: {}
+    shardServer3_config_data: {}
+services:
+    mongodb:
+        container_name: mongodb
+        image: mongo:4.4.18
+        command: bash -c "/mongodb_scripts/mongos_server.sh"
+        ports:
+            - '${DB_CONTAINER_PORT}:${DB_SERVER_PORT}'
+        environment:
+            localhostUsername: ${LOCALHOST_USERNAME}
+            dbAdminUsername: ${DB_ADMIN_USERNAME}
+            dbUsername: ${DB_USERNAME}
+            dbPassword: "${DB_PASSWORD}"
+            dbName: ${DB_DATABASE_NAME}
+            dbPort: ${DB_SERVER_PORT}
+            configReplSet: configReplicaSet
+            configMember0: configServer1
+            configMember1: configServer2
+            configMember2: configServer3
+            shardReplSet: shardReplicaSet
+            shardMember0: shardServer1
+            shardMember1: shardServer2
+            shardMember2: shardServer3
+        volumes:
+            - mongodb_data:/data/db
+            - mongodb_config_data:/data/configdb
+            - ./mongodb_scripts/mongos_server.sh:/mongodb_scripts/mongos_server.sh
+            - ./security/ca/ca.crt:/security/ca.pem
+            - ./security/mongodb_member/app.pem:/security/member.pem
+            - ./security/mongodb/app.pem:/security/app.pem
+    configServer1:
+        container_name: configServer1
+        image: mongo:4.4.18
+        command: bash -c "/mongodb_scripts/config_server.sh"
+        environment:
+            dbPort: ${DB_SERVER_PORT}
+            replSet: configReplicaSet
+            member0: configServer1
+            member1: configServer2
+            member2: configServer3
+        volumes:
+            - configServer1_data:/data/db
+            - configServer1_config_data:/data/configdb
+            - ./mongodb_scripts/config_server.sh:/mongodb_scripts/config_server.sh
+            - ./security/ca/ca.crt:/security/ca.pem
+            - ./security/configServer1_member/app.pem:/security/member.pem
+            - ./security/configServer1/app.pem:/security/app.pem
+    configServer2:
+        container_name: configServer2
+        image: mongo:4.4.18
+        command: bash -c "/mongodb_scripts/secondary_config_server.sh"
+        environment:
+            replSet: configReplicaSet
+            dbPort: ${DB_SERVER_PORT}
+        volumes:
+            - configServer2_data:/data/db
+            - configServer2_config_data:/data/configdb
+            - ./mongodb_scripts/secondary_config_server.sh:/mongodb_scripts/secondary_config_server.sh
+            - ./security/ca/ca.crt:/security/ca.pem
+            - ./security/configServer2_member/app.pem:/security/member.pem
+            - ./security/configServer2/app.pem:/security/app.pem
+    configServer3:
+        container_name: configServer3
+        image: mongo:4.4.18
+        command: bash -c "/mongodb_scripts/secondary_config_server.sh"
+        environment:
+            replSet: configReplicaSet
+            dbPort: ${DB_SERVER_PORT}
+        volumes:
+            - configServer3_data:/data/db
+            - configServer3_config_data:/data/configdb
+            - ./mongodb_scripts/secondary_config_server.sh:/mongodb_scripts/secondary_config_server.sh
+            - ./security/ca/ca.crt:/security/ca.pem
+            - ./security/configServer3_member/app.pem:/security/member.pem
+            - ./security/configServer3/app.pem:/security/app.pem
+    shardServer1:
+        container_name: shardServer1
+        image: mongo:4.4.18
+        command: bash -c "/mongodb_scripts/shard_server.sh"
+        environment:
+            dbPort: ${DB_SERVER_PORT} 
+            replSet: shardReplicaSet 
+            member0: shardServer1 
+            member1: shardServer2 
+            member2: shardServer3
+        volumes:
+            - shardServer1_data:/data/db
+            - shardServer1_config_data:/data/configdb
+            - ./mongodb_scripts/shard_server.sh:/mongodb_scripts/shard_server.sh
+            - ./security/ca/ca.crt:/security/ca.pem
+            - ./security/shardServer1_member/app.pem:/security/member.pem
+            - ./security/shardServer1/app.pem:/security/app.pem
+    shardServer2:
+        container_name: shardServer2
+        image: mongo:4.4.18
+        command: bash -c "/mongodb_scripts/secondary_shard_server.sh"
+        environment:
+            replSet: shardReplicaSet
+            dbPort: ${DB_SERVER_PORT}
+        volumes:
+            - shardServer2_data:/data/db
+            - shardServer2_data:/data/configdb
+            - ./mongodb_scripts/secondary_shard_server.sh:/mongodb_scripts/secondary_shard_server.sh
+            - ./security/ca/ca.crt:/security/ca.pem
+            - ./security/shardServer2_member/app.pem:/security/member.pem
+            - ./security/shardServer2/app.pem:/security/app.pem
+    shardServer3:
+        container_name: shardServer3
+        image: mongo:4.4.18
+        command: bash -c "/mongodb_scripts/secondary_shard_server.sh"
+        environment:
+            replSet: shardReplicaSet
+            dbPort: ${DB_SERVER_PORT}
+        volumes:
+            - shardServer3_data:/data/db
+            - shardServer3_config_data:/data/configdb
+            - ./mongodb_scripts/secondary_shard_server.sh:/mongodb_scripts/secondary_shard_server.sh
+            - ./security/ca/ca.crt:/security/ca.pem
+            - ./security/shardServer3_member/app.pem:/security/member.pem
+            - ./security/shardServer3/app.pem:/security/app.pem

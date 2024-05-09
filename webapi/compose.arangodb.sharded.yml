@@ -1,0 +1,232 @@
+version: "3.8"
+
+networks:
+  backend:
+    driver: bridge
+  db:
+    driver: bridge
+
+services:
+  agency1:
+    container_name: agency1
+    image: arangodb:3.8
+    command: arangod
+      --server.endpoint tcp://agency1:8531
+      --agency.my-address tcp://agency1:8531
+      --server.jwt-secret-keyfile /etc/arangodb.secret
+      --server.authentication true
+      --agency.activate true
+      --agency.size 3
+      --agency.supervision true
+      --database.directory /data
+      --agency.endpoint tcp://agency2:8531
+      --agency.endpoint tcp://agency3:8531
+    volumes:
+      - ./jwt-secret:/etc/arangodb.secret
+    environment:
+      - ARANGO_ROOT_PASSWORD=password
+    restart: unless-stopped
+    networks:
+      - db
+  agency2:
+    container_name: agency2
+    image: arangodb:3.8
+    command: arangod
+      --server.endpoint tcp://agency2:8531
+      --agency.my-address tcp://agency2:8531
+      --server.jwt-secret-keyfile /etc/arangodb.secret
+      --server.authentication true
+      --agency.activate true
+      --agency.size 3
+      --agency.supervision true
+      --agency.endpoint tcp://agency1:8531
+      --agency.endpoint tcp://agency3:8531
+      --database.directory /data
+    volumes:
+      - ./jwt-secret:/etc/arangodb.secret
+    environment:
+      - ARANGO_ROOT_PASSWORD=password
+    restart: unless-stopped
+    depends_on:
+      - agency1
+    networks:
+      - db
+  agency3:
+    container_name: agency3
+    image: arangodb:3.8
+    command: arangod
+      --server.endpoint tcp://agency3:8531
+      --agency.my-address tcp://agency3:8531
+      --server.jwt-secret-keyfile /etc/arangodb.secret
+      --server.authentication true
+      --agency.activate true
+      --agency.size 3
+      --agency.supervision true
+      --agency.endpoint tcp://agency1:8531
+      --agency.endpoint tcp://agency2:8531
+      --database.directory /data
+    volumes:
+      - ./jwt-secret:/etc/arangodb.secret
+    environment:
+      - ARANGO_ROOT_PASSWORD=password
+    restart: unless-stopped
+    depends_on:
+      - agency1
+    networks:
+      - db
+  coordinator1:
+    container_name: coordinator1
+    image: arangodb:3.8
+    command: arangod
+      --server.jwt-secret-keyfile /etc/arangodb.secret
+      --server.authentication=true
+      --server.endpoint tcp://coordinator1:8529
+      --cluster.my-address tcp://coordinator1:8529
+      --cluster.my-role COORDINATOR
+      --cluster.agency-endpoint tcp://agency1:8531
+      --cluster.agency-endpoint tcp://agency2:8531
+      --cluster.agency-endpoint tcp://agency3:8531
+      --database.directory /data &
+    ports:
+      - 7179:8529
+    expose:
+      - 8529
+    volumes:
+      - ./jwt-secret:/etc/arangodb.secret
+    environment:
+      - ARANGO_ROOT_PASSWORD=password
+    restart: unless-stopped
+    depends_on:
+      - agency1
+      - agency2
+      - agency3
+    networks:
+      - db
+  coordinator2:
+    container_name: coordinator2
+    image: arangodb:3.8
+    command: arangod
+      --server.jwt-secret-keyfile /etc/arangodb.secret
+      --server.authentication=true
+      --server.endpoint tcp://coordinator2:8529
+      --cluster.my-address tcp://coordinator2:8529
+      --cluster.my-role COORDINATOR
+      --cluster.agency-endpoint tcp://agency1:8531
+      --cluster.agency-endpoint tcp://agency2:8531
+      --cluster.agency-endpoint tcp://agency3:8531
+      --database.directory /data &
+    ports:
+      - 7279:8529
+    expose:
+      - 8529
+    volumes:
+      - ./jwt-secret:/etc/arangodb.secret
+    environment:
+      - ARANGO_ROOT_PASSWORD=password
+    restart: unless-stopped
+    depends_on:
+      - agency1
+      - agency2
+      - agency3
+    networks:
+      - db
+  coordinator3:
+    container_name: coordinator3
+    image: arangodb:3.8
+    command: arangod
+      --server.jwt-secret-keyfile /etc/arangodb.secret
+      --server.authentication=true
+      --server.endpoint tcp://coordinator3:8529
+      --cluster.my-address tcp://coordinator3:8529
+      --cluster.my-role COORDINATOR
+      --cluster.agency-endpoint tcp://agency1:8531
+      --cluster.agency-endpoint tcp://agency2:8531
+      --cluster.agency-endpoint tcp://agency3:8531
+      --database.directory /data &
+    ports:
+      - 7379:8529
+    expose:
+      - 8529
+    volumes:
+      - ./jwt-secret:/etc/arangodb.secret
+    environment:
+      - ARANGO_ROOT_PASSWORD=password
+    restart: unless-stopped
+    depends_on:
+      - agency1
+      - agency2
+      - agency3
+    networks:
+      - db
+  dbserver1:
+    container_name: dbserver1
+    image: arangodb:3.8
+    command: arangod
+      --server.jwt-secret-keyfile /etc/arangodb.secret
+      --server.authentication=true
+      --server.endpoint tcp://dbserver1:8530
+      --cluster.my-address tcp://dbserver1:8530
+      --cluster.my-role DBSERVER
+      --cluster.agency-endpoint tcp://agency1:8531
+      --cluster.agency-endpoint tcp://agency2:8531
+      --cluster.agency-endpoint tcp://agency3:8531
+      --database.directory /data &
+    volumes:
+      - ./jwt-secret:/etc/arangodb.secret
+    environment:
+      - ARANGO_ROOT_PASSWORD=password
+    restart: unless-stopped
+    depends_on:
+      - agency1
+      - agency2
+      - agency3
+    networks:
+      - db
+  dbserver2:
+    container_name: dbserver2
+    image: arangodb:3.8
+    command: arangod
+      --server.jwt-secret-keyfile /etc/arangodb.secret
+      --server.authentication=true
+      --server.endpoint tcp://dbserver2:8530
+      --cluster.my-address tcp://dbserver2:8530
+      --cluster.my-role DBSERVER
+      --cluster.agency-endpoint tcp://agency1:8531
+      --cluster.agency-endpoint tcp://agency2:8531
+      --cluster.agency-endpoint tcp://agency3:8531
+      --database.directory /data &
+    volumes:
+      - ./jwt-secret:/etc/arangodb.secret
+    environment:
+      - ARANGO_ROOT_PASSWORD=password
+    restart: unless-stopped
+    depends_on:
+      - agency1
+      - agency2
+      - agency3
+    networks:
+      - db
+  dbserver3:
+    container_name: dbserver3
+    image: arangodb:3.8
+    command: arangod
+      --server.jwt-secret-keyfile /etc/arangodb.secret
+      --server.authentication=true
+      --server.endpoint tcp://dbserver3:8530
+      --cluster.my-address tcp://dbserver3:8530
+      --cluster.my-role DBSERVER
+      --cluster.agency-endpoint tcp://agency1:8531
+      --cluster.agency-endpoint tcp://agency2:8531
+      --cluster.agency-endpoint tcp://agency3:8531
+      --database.directory /data &
+    volumes:
+      - ./jwt-secret:/etc/arangodb.secret
+    environment:
+      - ARANGO_ROOT_PASSWORD=password
+    restart: unless-stopped
+    depends_on:
+      - agency1
+      - agency2
+      - agency3
+    networks:
+      - db
