@@ -68,31 +68,64 @@ export async function getDb(url: string | string[], databaseName: string, passwo
 }
 
 export async function getUsersCollection(db: arango.Database): Promise<DocumentCollection<any>> {
-    let document = await getCollection(db, DocumentCollectionNames.USERS, false);
+    const collection = await getCollection(db, DocumentCollectionNames.USERS, false);
     try {
-        await document.index('username-unique')
+        await collection.index('username-unique')
     } catch (error) {
         if ((error as ArangoError.ArangoError).code == 404) {
             console.log('"username-unique" index doesn\'t exist, creating...');
-            await document.ensureIndex({ type: 'persistent', fields: ['username'], unique: true, name: 'username-unique', deduplicate: false, estimates: true })
+            await collection.ensureIndex({ type: 'persistent', fields: ['username'], unique: true, name: 'username-unique', deduplicate: false, estimates: true })
         }
     }
 
     try {
-        await document.index('email-unique')
+        await collection.index('email-unique')
     } catch (error) {
         if ((error as ArangoError.ArangoError).code == 404) {
             console.log('"email-unique" index doesn\'t exist, creating...');
-            await document.ensureIndex({ type: 'persistent', fields: ['email'], unique: true, name: 'email-unique', deduplicate: false, estimates: true })
+            await collection.ensureIndex({ type: 'persistent', fields: ['email'], unique: true, name: 'email-unique', deduplicate: false, estimates: true })
         }
     }
 
-    return document
+    return collection
 }
 
-export async function getReadsCollection(db: arango.Database): Promise<EdgeCollection<any>> { return await getCollection(db, EdgeCollectionNames.READS, true) }
-export async function getUpdatesCollection(db: arango.Database): Promise<EdgeCollection<any>> { return await getCollection(db, EdgeCollectionNames.UPDATES, true) }
-export async function getDeletesCollection(db: arango.Database): Promise<EdgeCollection<any>> { return await getCollection(db, EdgeCollectionNames.DELETES, true) }
+export async function getReadsCollection(db: arango.Database): Promise<EdgeCollection<any>> {
+    const collection = await getCollection(db, EdgeCollectionNames.READS, true)
+    try {
+        await collection.index('from-to-unique')
+    } catch (error) {
+        if ((error as ArangoError.ArangoError).code == 404) {
+            console.log('"username-unique" index doesn\'t exist, creating...');
+            await collection.ensureIndex({ type: 'persistent', fields: ['_from', '_to'], unique: true, name: 'from-to-unique', deduplicate: false, estimates: true })
+        }
+    }
+    return collection
+}
+export async function getUpdatesCollection(db: arango.Database): Promise<EdgeCollection<any>> {
+    const collection = await getCollection(db, EdgeCollectionNames.UPDATES, true)
+    try {
+        await collection.index('from-to-unique')
+    } catch (error) {
+        if ((error as ArangoError.ArangoError).code == 404) {
+            console.log('"username-unique" index doesn\'t exist, creating...');
+            await collection.ensureIndex({ type: 'persistent', fields: ['_from', '_to'], unique: true, name: 'from-to-unique', deduplicate: false, estimates: true })
+        }
+    }
+    return collection
+}
+export async function getDeletesCollection(db: arango.Database): Promise<EdgeCollection<any>> {
+    const collection = await getCollection(db, EdgeCollectionNames.DELETES, true)
+    try {
+        await collection.index('from-to-unique')
+    } catch (error) {
+        if ((error as ArangoError.ArangoError).code == 404) {
+            console.log('"username-unique" index doesn\'t exist, creating...');
+            await collection.ensureIndex({ type: 'persistent', fields: ['_from', '_to'], unique: true, name: 'from-to-unique', deduplicate: false, estimates: true })
+        }
+    }
+    return collection
+}
 
 export function getCollection(db: arango.Database, collectionName: string, isEdgeCollection: boolean): Promise<EdgeCollection<any>>
 export function getCollection(db: arango.Database, collectionName: string, isEdgeCollection: boolean): Promise<DocumentCollection<any>>

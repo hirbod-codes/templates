@@ -43,8 +43,6 @@ export function authRoutes(): Hono<Env, BlankSchema, "/"> {
             } as User, { stripUnknown: true })
         } catch (error) { return c.text('', 404) }
 
-        console.log(user)
-
         const createdUser = await userRepository.create(user)
 
         if (!createdUser)
@@ -63,7 +61,7 @@ export function authRoutes(): Hono<Env, BlankSchema, "/"> {
         const { token } = c.req.query()
 
         const payload = getJwtPayload(token, env<envSchema>(c).JWT_SECRET!, Number(env<envSchema>(c).VERIFICATION_JWT_MAX_AGE_SECONDS!))
-        if (payload && await authRepository.activateUser(payload.jti))
+        if (payload && await authRepository.activateEmail(payload.jti))
             return c.text('', 204)
         else
             return c.text('', 400)
@@ -93,7 +91,7 @@ export function authRoutes(): Hono<Env, BlankSchema, "/"> {
 
         const loginData = loginDataSchema.cast(params, { stripUnknown: true })
 
-        let result: any[] = await authRepository.loggingIn(loginData)
+        let result: any = await authRepository.loggingIn(loginData)
         console.debug(loginData, result)
 
         if (!yup.object().shape({ _key: _key.required().nonNullable(), password: yup.string().required() }).isValidSync(result))
@@ -102,7 +100,9 @@ export function authRoutes(): Hono<Env, BlankSchema, "/"> {
         if (!bcrypt.compareSync(loginData.password, result.password))
             return c.notFound()
 
-        await authRepository.loggedIn(result._key)
+        result = await authRepository.loggedIn(result._key)
+        if (!result)
+            return c.text('', 500)
 
         return c.json({ jwt: generateJwtToken(result._key!, env<envSchema>(c).JWT_SECRET!, Number(env<envSchema>(c).JWT_MAX_AGE_SECONDS!)) }, 201)
     })

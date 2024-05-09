@@ -1,10 +1,10 @@
 import arango, { Database, aql } from 'arangojs'
 import { User, userReadableProperties, userUpdatableProperties } from '../../Models/user.ts'
 import IUserRepository from '../iuser-repository.ts'
-import { ArangoError } from 'arangojs/error.js'
 import { DocumentCollection, EdgeCollection } from 'arangojs/collection.js'
 import { Graph } from 'arangojs/graph.js'
 import { readQuery, writeQuery } from '../../Database/arango-context.ts'
+import { errorWrapper } from "../data-helpers.ts";
 
 export default class UserRepository implements IUserRepository {
     private _db: Database
@@ -27,20 +27,6 @@ export default class UserRepository implements IUserRepository {
         this._graphDeletes = graphDeletes
     }
 
-    private async errorWrapper(action: () => Promise<any>, errorCallback: () => Promise<any> = async () => { }): Promise<any> {
-        try {
-            return await action()
-        } catch (error) {
-            console.error('error in account creation transaction.\n', JSON.stringify(error) + '\n', error)
-
-            const errorNum = Number((error as ArangoError).errorNum)
-            if ([1200, 1202, 1203, 1204, 1205, 1207, 1208, 1210, 1216, 1221, 1222, 1226, 1227].includes(errorNum))
-                return await errorCallback()
-            else
-                throw error
-        }
-    }
-
     async create(user: User): Promise<any | null | undefined> {
         const trx = await this._db.beginTransaction(
             {
@@ -59,7 +45,7 @@ export default class UserRepository implements IUserRepository {
             }
         )
 
-        return await this.errorWrapper(
+        return await errorWrapper(
             async () => {
                 let newUser: any[]
 
@@ -89,7 +75,7 @@ export default class UserRepository implements IUserRepository {
     }
 
     async createUserReader(fromUserKey: string, toUserKey: string, properties: string[]): Promise<void> {
-        await this.errorWrapper(async () => {
+        await errorWrapper(async () => {
             if (!properties || properties.length == 0)
                 throw new Error("Invalid properties provided.")
 
@@ -104,7 +90,7 @@ export default class UserRepository implements IUserRepository {
     }
 
     async createUserUpdater(fromUserKey: string, toUserKey: string, properties: string[]): Promise<void> {
-        await this.errorWrapper(async () => {
+        await errorWrapper(async () => {
             if (!properties || properties.length == 0)
                 throw new Error("Invalid properties provided.")
 
@@ -119,7 +105,7 @@ export default class UserRepository implements IUserRepository {
     }
 
     async createUserDeleter(fromUserKey: string, toUserKey: string): Promise<void> {
-        await this.errorWrapper(async () => {
+        await errorWrapper(async () => {
             let relationship = {
                 _from: `${this._usersDocument}/${fromUserKey}`,
                 _to: `${this._usersDocument}/${toUserKey}`,
@@ -130,7 +116,7 @@ export default class UserRepository implements IUserRepository {
     }
 
     async readWithIdCode(key: string, code: number): Promise<any | null> {
-        return await this.errorWrapper(
+        return await errorWrapper(
             async () => {
                 return (await readQuery(this._db, aql`
                     FOR user IN ${this._usersDocument} 
@@ -144,7 +130,7 @@ export default class UserRepository implements IUserRepository {
     systemRead(userKeys: string): Promise<any | null>
     systemRead(userKeys: string[]): Promise<any[] | null>
     async systemRead(userKeys: string | string[]): Promise<any[] | any | null> {
-        return await this.errorWrapper(
+        return await errorWrapper(
             async () => {
                 let keys
                 if (!Array.isArray(userKeys))
@@ -171,7 +157,7 @@ export default class UserRepository implements IUserRepository {
     }
 
     async read(authorKey: string, userKeys: string | string[]): Promise<any[] | null> {
-        return await this.errorWrapper(
+        return await errorWrapper(
             async () => {
                 let keys
                 if (!Array.isArray(userKeys))
@@ -204,7 +190,7 @@ export default class UserRepository implements IUserRepository {
     }
 
     async update(authorKey: string, users: any | any[]): Promise<boolean> {
-        return await this.errorWrapper(
+        return await errorWrapper(
             async () => {
                 if (!Array.isArray(users))
                     users = [users]
@@ -238,7 +224,7 @@ export default class UserRepository implements IUserRepository {
     }
 
     async updatePassword(userKey: string, password: string): Promise<any | null> {
-        return await this.errorWrapper(
+        return await errorWrapper(
             async () => {
                 const result = await writeQuery(this._db, aql`
                     UPDATE {_key: ${userKey}, password: ${password}} IN ${this._usersDocument}
@@ -252,10 +238,10 @@ export default class UserRepository implements IUserRepository {
     }
 
     async updateEmail(userKey: string, email: string): Promise<any | null> {
-        return await this.errorWrapper(
+        return await errorWrapper(
             async () => {
                 const result = await writeQuery(this._db, aql`
-                    UPDATE {_key: ${userKey}, email: ${email}} IN ${this._usersDocument}
+                    UPDATE {_key: ${userKey}, email: ${email}, isActivated: false} IN ${this._usersDocument}
                     RETURN NEW
                 `)
 
@@ -269,7 +255,7 @@ export default class UserRepository implements IUserRepository {
         if (code == null)
             codeExpiresAt = null
 
-        return await this.errorWrapper(
+        return await errorWrapper(
             async () => {
                 const result = await writeQuery(this._db, aql`
                     UPDATE {_key: ${userKey}, verificationCode: ${code}, verificationCodeExpiresAt: ${codeExpiresAt}} IN ${this._usersDocument}
@@ -283,7 +269,7 @@ export default class UserRepository implements IUserRepository {
     }
 
     async delete(authorKey: string, userKeys: string | string[]): Promise<boolean> {
-        return await this.errorWrapper(
+        return await errorWrapper(
             async () => {
                 if (!Array.isArray(userKeys))
                     userKeys = [userKeys]
