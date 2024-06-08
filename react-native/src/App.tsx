@@ -33,13 +33,6 @@ export default function App(): JSX.Element {
 
     const [theme, setTheme] = useState((colorScheme ?? 'light') == 'dark' ? darkTheme : lightTheme)
 
-    // theme = {
-    //     ...theme,
-    //     colors: {
-    //         ...theme.colors,
-    //     },
-    // };
-
     const toggleTheme = () => {
         setTheme(theme.dark ? lightTheme : darkTheme)
     }
@@ -95,22 +88,4 @@ function DetailsScreen(props: any): JSX.Element {
             <Title>Details Screen</Title>
         </>
     )
-}
-
-function Header({ title = null }) {
-    const theme = useTheme();
-    const { toggleTheme } = useContext(PreferencesContext);
-
-    return (
-        <Appbar.Header
-            theme={{
-                colors: {
-                    primary: theme?.colors.surface,
-                },
-            }}
-        >
-            <Appbar.Content title={title} />
-            <Switch value={theme.dark} onValueChange={toggleTheme} />
-        </Appbar.Header>
-    );
 }
