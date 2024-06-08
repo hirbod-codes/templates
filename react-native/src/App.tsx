@@ -29,13 +29,10 @@ const Drawer = createDrawerNavigator();
 
 export default function App(): JSX.Element {
     let colorScheme = Appearance.getColorScheme();
-    colorScheme = 'dark'
 
     const [theme, setTheme] = useState((colorScheme ?? 'light') == 'dark' ? darkTheme : lightTheme)
 
-    const toggleTheme = () => {
-        setTheme(theme.dark ? lightTheme : darkTheme)
-    }
+    const toggleTheme = () => setTheme(theme.dark ? lightTheme : darkTheme)
 
     return (
         <>
