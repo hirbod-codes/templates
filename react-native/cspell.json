@@ -1,0 +1,13 @@
+{
+    "version": "0.2",
+    "ignorePaths": [
+        "cspell.json",
+        "src/Localization/DateTime/astro.ts",
+        "src/Localization/DateTime/*-calendar.ts"
+    ],
+    "dictionaryDefinitions": [],
+    "dictionaries": [],
+    "words": [],
+    "ignoreWords": [],
+    "import": []
+}
