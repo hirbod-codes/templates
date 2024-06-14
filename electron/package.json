@@ -1,6 +1,6 @@
 {
-    "name": "costumer_manager_desktop",
-    "productName": "costumer_manager_desktop",
+    "name": "template",
+    "productName": "template",
     "version": "1.0.0",
     "description": "My Electron application description",
     "keywords": [],
@@ -50,6 +50,8 @@
         "@mui/material": "^5.15.20",
         "electron-squirrel-startup": "^1.0.1",
         "i18next": "^23.11.5",
-        "react-i18next": "^14.1.2"
+        "luxon": "^3.4.4",
+        "react-i18next": "^14.1.2",
+        "yup": "^1.4.0"
     }
 }
