@@ -89,18 +89,21 @@ jobs:
                 with:
                     name: linux
                     path: ./out/linux/
+            - run: zip -r ./release-linux.zip ./out/linux/
+
             - 
                 uses: actions/download-artifact@master
                 with:
                     name: win32
                     path: ./out/win32/
+            - run: zip -r ./release-windows.zip ./out/win32/
+
             - 
                 uses: actions/download-artifact@master
                 with:
                     name: darwin
                     path: ./out/darwin/
-
-            - run: zip -r ./release.zip ./out/
+            - run: zip -r ./release-macos.zip ./out/darwin/
 
             -
                 id: changelog_generator
@@ -126,4 +129,4 @@ jobs:
                     body: ${{ steps.changelog_generator.outputs.changelog }}
                     draft: false
                     prerelease: false
-                    files: ./out.zip
+                    files: ./release-linux.zip,./release-windows.zip,./release-macos.zip
