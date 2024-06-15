@@ -5,9 +5,7 @@ import { handleConfigEvents } from './Electron/Configuration/configuration';
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 
-if (require('electron-squirrel-startup')) {
-    app.quit();
-}
+if (require('electron-squirrel-startup')) app.quit();
 
 const createWindow = (): void => {
     const mainWindow = new BrowserWindow({
@@ -23,7 +21,8 @@ const createWindow = (): void => {
 
     mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
-    mainWindow.webContents.openDevTools();
+    if (!app.isPackaged)
+        mainWindow.webContents.openDevTools();
 };
 
 app.on('ready', () => {
@@ -34,9 +33,8 @@ app.on('ready', () => {
 })
 
 app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
+    if (process.platform !== 'darwin')
         app.quit();
-    }
 });
 
 app.on('activate', () => {
