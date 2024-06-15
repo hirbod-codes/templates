@@ -26,7 +26,9 @@
         "@electron-forge/plugin-fuses": "^7.4.0",
         "@electron-forge/plugin-webpack": "^7.4.0",
         "@electron/fuses": "^1.8.0",
+        "@types/luxon": "^3.4.2",
         "@types/react-dom": "^18.3.0",
+        "@types/stylis": "^4.2.6",
         "@typescript-eslint/eslint-plugin": "^5.62.0",
         "@typescript-eslint/parser": "^5.62.0",
         "@vercel/webpack-asset-relocator-loader": "^1.7.3",
@@ -52,6 +54,8 @@
         "i18next": "^23.11.5",
         "luxon": "^3.4.4",
         "react-i18next": "^14.1.2",
+        "stylis": "^4.3.2",
+        "stylis-plugin-rtl": "^2.1.1",
         "yup": "^1.4.0"
     }
 }

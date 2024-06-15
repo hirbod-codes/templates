@@ -1,4 +1,6 @@
 import { app, BrowserWindow } from 'electron';
+import { handleMenuEvents } from './Electron/Menu/menu';
+import { handleConfigEvents } from './Electron/Configuration/configuration';
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
@@ -24,7 +26,12 @@ const createWindow = (): void => {
     mainWindow.webContents.openDevTools();
 };
 
-app.on('ready', createWindow);
+app.on('ready', () => {
+    createWindow()
+
+    handleMenuEvents()
+    handleConfigEvents()
+})
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {

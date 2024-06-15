@@ -4,20 +4,24 @@ import { initReactI18next } from "react-i18next";
 //Import all translation files
 import Persian from "./Localization/Translations/Persian.json";
 import English from "./Localization/Translations/English.json";
+import { Direction } from "./Lib/Localization";
 
 export type Language = {
     code: string,
     name: string,
+    direction: Direction
 }
 
 export const languages: Language[] = [
     {
         code: 'fa',
         name: 'Persian',
+        direction: 'rtl'
     },
     {
         code: 'en',
         name: 'English',
+        direction: 'ltr'
     }
 ]
 

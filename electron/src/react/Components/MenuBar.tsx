@@ -28,7 +28,7 @@ const CloseButton = ({ children, onClick }: { children: React.ReactNode, onClick
 export function MenuBar({ backgroundColor }: { backgroundColor: any }) {
     return (
         <>
-            <Box sx={{ width: '100%', position: 'fixed', top: '0', left: '0', height: '2rem', backgroundColor: backgroundColor, zIndex: 10 }}>
+            <Box dir='ltr' sx={{ width: '100%', position: 'fixed', top: '0', left: '0', height: '2rem', backgroundColor: backgroundColor, zIndex: 10 }}>
                 <Grid container direction="row" spacing={2} justifyContent="space-between" alignItems="flex-start" sx={{ 'WebkitAppRegion': 'drag' }}>
                     <Grid item xs={'auto'} sx={{ 'WebkitAppRegion': 'no-drag' }}>
                         <IconButton

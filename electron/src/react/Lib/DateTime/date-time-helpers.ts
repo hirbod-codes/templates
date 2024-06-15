@@ -1,8 +1,10 @@
 import { getGregorianMonths, gregorian_to_jd, isLeapGregorianYear, jd_to_gregorian } from "./gregorian-calendar"
 import { getPersianMonths, isLeapPersianYear, jd_to_persian, persian_to_jd } from "./persian-calendar"
 import { DateTime } from "luxon"
-import type { Date, Time, GregorianDate, PersianDate, Calendar, Locale } from '../DateTime'
+import type { Date, Time, GregorianDate, PersianDate, Calendar } from '../DateTime'
+import type { Locale } from "../Localization"
 import { number } from "yup"
+import { getLuxonLocale } from "../helpers"
 
 export const DATE_TIME = 'cccc d/M/y H:m:s'
 export const DATE = 'cccc d/M/y'
@@ -16,12 +18,12 @@ export function toFormat(date: { date: Date, time: Time } | number, locale: Loca
 
     return DateTime
         .local(date.date.year, date.date.month, date.date.day, date.time.hour, date.time.minute, date.time.second)
-        .setLocale(locale.name)
+        .setLocale(getLuxonLocale(locale.code))
         .toFormat(format)
 }
 
 export function fromUnix(toLocale: Locale, unixTimestamp: number): { date: Date, time: Time } {
-    const dateTime = DateTime.fromSeconds(unixTimestamp).setZone(toLocale.zone).setLocale(toLocale.name)
+    const dateTime = DateTime.fromSeconds(unixTimestamp).setZone(toLocale.zone).setLocale(getLuxonLocale(toLocale.code))
 
     return fromDateTime(toLocale, 'Gregorian', dateTime)
 }
@@ -37,7 +39,7 @@ export function fromDateTimeParts(toLocale: Locale, fromLocale: Locale, date: Da
     const dateTime = DateTime
         .local(date.year, date.month, date.day, time.hour, time.minute, time.second, { zone: fromLocale.zone })
         .setZone(toLocale.zone)
-        .setLocale(toLocale.name)
+        .setLocale(getLuxonLocale(toLocale.code))
 
     return fromDateTime(toLocale, fromLocale.calendar, dateTime)
 }
@@ -49,7 +51,7 @@ export function fromDateTimePartsToFormat(toLocale: Locale, fromLocale: Locale, 
 export function fromDateTime(toLocale: Locale, fromCalendar: Calendar, dateTime: DateTime): { date: Date, time: Time } {
     dateTime = dateTime
         .setZone(toLocale.zone)
-        .setLocale(toLocale.name)
+        .setLocale(getLuxonLocale(toLocale.code))
 
     let date
     if (toLocale.calendar === fromCalendar)
@@ -83,7 +85,7 @@ export function fromDateTimeToFormat(toLocale: Locale, fromCalendar: Calendar, d
 }
 
 export function getLocaleMonths(locale: Locale, year: number): { name: string, days: number }[] {
-    const language = locale.name
+    const language = getLuxonLocale(locale.code)
     if (locale.calendar === 'Persian')
         return getPersianMonths(isLeapPersianYear(year), language)
     if (locale.calendar === 'Gregorian')
