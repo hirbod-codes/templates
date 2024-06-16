@@ -4,7 +4,7 @@ import path from 'path'
 import type { Config } from './types'
 
 export function readConfig(): Config | undefined {
-    const configFile = path.join(app.getAppPath(), 'src', 'Electron', 'Configuration', 'config.json')
+    const configFile = path.join(app.getPath('appData'), app.getName(), 'Configuration', 'config.json')
 
     if (!fs.existsSync(configFile))
         return undefined
@@ -14,13 +14,13 @@ export function readConfig(): Config | undefined {
 }
 
 export function writeConfig(config: Config): void {
-    const configFile = path.join(app.getAppPath(), 'src', 'Electron', 'Configuration', 'config.json')
+    const configFile = path.join(app.getPath('appData'), app.getName(), 'Configuration', 'config.json')
 
     fs.writeFile(configFile, JSON.stringify(config), (err) => err ? console.error(err) : null)
 }
 
 export function writeConfigSync(config: Config): void {
-    const configFile = path.join(app.getAppPath(), 'src', 'Electron', 'Configuration', 'config.json')
+    const configFile = path.join(app.getPath('appData'), app.getName(), 'Configuration', 'config.json')
 
     fs.writeFileSync(configFile, JSON.stringify(config))
 }
