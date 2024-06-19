@@ -7,7 +7,7 @@ import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import DisplaySettingsIcon from '@mui/icons-material/DisplaySettingsOutlined';
 
-import { CssBaseline, PaletteMode, createTheme, useMediaQuery, AppBar, Drawer, IconButton, List, ListItemButton, ListItemIcon, ListItemText, Toolbar, Typography, ThemeProvider, Collapse, CircularProgress, Stack } from '@mui/material'
+import { CssBaseline, PaletteMode, createTheme, useMediaQuery, AppBar, Drawer, IconButton, List, ListItemButton, ListItemIcon, ListItemText, Toolbar, Typography, ThemeProvider, Collapse, CircularProgress, Stack, Box } from '@mui/material'
 import { useState, useRef } from 'react'
 import { Localization, enUS } from '@mui/material/locale';
 import { useTranslation } from "react-i18next";
@@ -175,21 +175,6 @@ export function App() {
                 <CacheProvider value={configuration.locale.direction === 'rtl' ? rtlCache : ltrCache}>
                     <ThemeProvider theme={configuration.theme}>
                         <CssBaseline />
-                        <MenuBar backgroundColor={configuration.theme.palette.background.default} />
-
-                        <AppBar position='relative'>
-                            <Toolbar variant="dense">
-                                <IconButton size='large' color='inherit' onClick={() => setOpenDrawer(true)} sx={{ mr: 2 }}>
-                                    <MenuIcon fontSize='inherit' />
-                                </IconButton>
-                                <Typography variant='h6' component='div' sx={{ flexGrow: 1 }}>
-                                    {/* Title */}
-                                </Typography>
-                                <IconButton size='medium' color='inherit' onClick={() => updateTheme(configuration.theme.palette.mode == 'dark' ? 'light' : 'dark', configuration.locale.direction, getReactLocale(configuration.locale.code))}>
-                                    {configuration.theme.palette.mode == 'light' ? <LightModeIcon fontSize='inherit' /> : <DarkModeIcon fontSize='inherit' />}
-                                </IconButton>
-                            </Toolbar>
-                        </AppBar>
 
                         <Drawer open={openDrawer} onClose={() => setOpenDrawer(false)}>
                             <List>
@@ -219,7 +204,27 @@ export function App() {
                             </List>
                         </Drawer>
 
-                        {content}
+                        <Stack direction='column' height={'100%'} alignItems='stretch' justifyContent='flex-start'>
+                            <MenuBar backgroundColor={configuration.theme.palette.background.default} />
+
+                            <AppBar position='relative'>
+                                <Toolbar variant="dense">
+                                    <IconButton size='large' color='inherit' onClick={() => setOpenDrawer(true)} sx={{ mr: 2 }}>
+                                        <MenuIcon fontSize='inherit' />
+                                    </IconButton>
+                                    <Typography variant='h6' component='div' sx={{ flexGrow: 1 }}>
+                                        {/* Title */}
+                                    </Typography>
+                                    <IconButton size='medium' color='inherit' onClick={() => updateTheme(configuration.theme.palette.mode == 'dark' ? 'light' : 'dark', configuration.locale.direction, getReactLocale(configuration.locale.code))}>
+                                        {configuration.theme.palette.mode == 'light' ? <LightModeIcon fontSize='inherit' /> : <DarkModeIcon fontSize='inherit' />}
+                                    </IconButton>
+                                </Toolbar>
+                            </AppBar>
+
+                            <Box flexGrow={1}>
+                                {content}
+                            </Box>
+                        </Stack>
                     </ThemeProvider >
                 </CacheProvider>
             </ConfigurationContext.Provider>

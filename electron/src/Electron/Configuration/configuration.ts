@@ -14,7 +14,11 @@ export function readConfig(): Config | undefined {
 }
 
 export function writeConfig(config: Config): void {
-    const configFile = path.join(app.getPath('appData'), app.getName(), 'Configuration', 'config.json')
+    const configFolder = path.join(app.getPath('appData'), app.getName(), 'Configuration')
+    const configFile = path.join(configFolder, 'config.json')
+
+    if (!fs.existsSync(configFolder))
+        fs.mkdirSync(configFolder, { recursive: true })
 
     fs.writeFile(configFile, JSON.stringify(config), (err) => err ? console.error(err) : null)
 }
