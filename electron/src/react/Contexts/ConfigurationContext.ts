@@ -1,8 +1,8 @@
 import { createContext } from "react";
 import { Localization } from "@mui/material/locale";
 import { PaletteMode, Theme } from "@mui/material";
-import { Calendar, TimeZone } from "./Lib/DateTime";
-import { Locale } from "./Lib/Localization";
+import { Calendar, TimeZone } from "../Lib/DateTime";
+import { Locale } from "../Lib/Localization";
 
 export type ConfigurationStorableData = {
     locale: Locale,
@@ -19,8 +19,8 @@ export type ConfigurationSetter = {
 
 export type Configuration = {
     get: ConfigurationData,
-    set: ConfigurationSetter
+    set: ConfigurationSetter,
+    hasFetchedConfig?: boolean,
 }
 
-export const ConfigurationContext = createContext<Configuration>(undefined);
-
+export const ConfigurationContext = createContext<Configuration | undefined>(undefined);

@@ -1,233 +1,87 @@
-import HomeIcon from '@mui/icons-material/HomeOutlined';
-import SettingsIcon from '@mui/icons-material/SettingsOutlined';
-import MenuIcon from '@mui/icons-material/MenuOutlined';
-import LightModeIcon from '@mui/icons-material/LightModeOutlined'
-import DarkModeIcon from '@mui/icons-material/DarkModeOutlined'
-import ExpandLess from '@mui/icons-material/ExpandLess';
-import ExpandMore from '@mui/icons-material/ExpandMore';
-import DisplaySettingsIcon from '@mui/icons-material/DisplaySettingsOutlined';
+import { useContext, useState } from 'react'
 
-import { CssBaseline, PaletteMode, createTheme, useMediaQuery, AppBar, Drawer, IconButton, List, ListItemButton, ListItemIcon, ListItemText, Toolbar, Typography, ThemeProvider, Collapse, CircularProgress, Stack, Box } from '@mui/material'
-import { useState, useRef } from 'react'
-import { Localization, enUS } from '@mui/material/locale';
-import { useTranslation } from "react-i18next";
+import { HomeOutlined, SettingsOutlined, MenuOutlined, LightModeOutlined, DarkModeOutlined, ExpandLess, ExpandMore, DisplaySettingsOutlined, StorageOutlined } from '@mui/icons-material'
+import { AppBar, Drawer, IconButton, List, ListItemButton, ListItemIcon, ListItemText, Toolbar, Typography, Collapse, Grid, Theme } from '@mui/material'
 
-import type { Locale } from './Lib/Localization';
-import type { Calendar, TimeZone } from './Lib/DateTime';
-import { MenuBar } from './Components/MenuBar';
-import { ConfigurationContext, ConfigurationData, ConfigurationStorableData } from './ConfigurationContext';
-import { General } from './Pages/Settings/General';
-import { Home } from './Pages/Home';
-import { getLocale, getReactLocale } from './Lib/helpers';
-import { CacheProvider } from '@emotion/react';
-import createCache from '@emotion/cache';
-import { prefixer } from 'stylis';
-import rtlPlugin from 'stylis-plugin-rtl';
-import type { configAPI } from '../Electron/Configuration/renderer/configAPI';
+import { Home } from './Pages/Home'
+import { t } from 'i18next'
+import { General } from './Pages/Settings/General'
+import { MenuBar } from './Components/MenuBar'
+import { ThemeContext } from '@emotion/react'
+import { ConfigurationContext } from './Contexts/ConfigurationContext'
+import { getReactLocale } from './Lib/helpers'
+import { NavigationContext } from './Contexts/NavigationContext'
 
-// Create rtl cache
-const rtlCache = createCache({
-    key: 'muirtl',
-    stylisPlugins: [prefixer, rtlPlugin],
-});
+export default function App() {
+    const nav = useContext(NavigationContext)
+    const theme = useContext(ThemeContext) as Theme
+    const configuration = useContext(ConfigurationContext)
+    const setContent = useContext(NavigationContext)?.setContent ?? ((o: any) => { })
 
-const ltrCache = createCache({
-    key: 'mui',
-});
-
-export function App() {
     // Navigation
     const [openDrawer, setOpenDrawer] = useState(false)
     const [openSettingsList, setOpenSettingsList] = useState(false)
-    const [content, setContent] = useState(<Home />)
 
-    // Localization
-    const { t, i18n } = useTranslation();
-
-    const initialThemeMode: PaletteMode = useMediaQuery('(prefers-color-scheme: dark)') ? 'dark' : 'light'
-    const getInitialLocale: Locale = ({ calendar: 'Persian', zone: 'Asia/Tehran', code: getLocale(enUS), direction: 'ltr' })
-    const defaultConfiguration: ConfigurationData = {
-        locale: getInitialLocale,
-        themeMode: initialThemeMode,
-        theme: createTheme(
-            {
-                palette: {
-                    mode: initialThemeMode,
-                },
-                direction: getInitialLocale.direction
-            },
-            getReactLocale(i18n)
-        )
-    }
-
-    const [configuration, setConfiguration] = useState<ConfigurationData>(defaultConfiguration)
-
-    const hasFetchedConfig = useRef(false)
-    if (!hasFetchedConfig.current) {
-        try {
-            (window as typeof window & { configAPI: configAPI }).configAPI.readConfig()
-                .then((c) => {
-                    if (c && c.configuration) {
-                        setConfiguration({
-                            ...c.configuration,
-                            theme: createTheme(
-                                {
-                                    palette: {
-                                        mode: c.configuration.themeMode,
-                                    },
-                                    direction: c.configuration.locale.direction
-                                },
-                                getReactLocale(c.configuration.locale.code)
-                            )
-                        })
-                        i18n.changeLanguage(c.configuration.locale.code)
-                        document.dir = c.configuration.locale.direction
-                    }
-                    else {
-                        setConfiguration(defaultConfiguration)
-                        persistConfigurationData({ locale: defaultConfiguration.locale, themeMode: defaultConfiguration.themeMode })
-                    }
-                })
-                .catch((err) => {
-                    setConfiguration(defaultConfiguration)
-                    persistConfigurationData({ locale: defaultConfiguration.locale, themeMode: defaultConfiguration.themeMode })
-                })
-        }
-        finally { hasFetchedConfig.current = true }
-    }
-
-    const persistConfigurationData = async (data: ConfigurationStorableData) => {
-        const config = await (window as typeof window & { configAPI: configAPI }).configAPI.readConfig();
-        (window as typeof window & { configAPI: configAPI }).configAPI.writeConfig({ ...config, configuration: data })
-    }
-    const updateTheme = (mode: PaletteMode, direction: 'rtl' | 'ltr', locale: Localization) => {
-        setConfiguration({
-            ...configuration,
-            themeMode: mode,
-            theme: createTheme(
-                {
-                    palette: {
-                        mode: mode,
-                    },
-                    direction: direction
-                },
-                locale
-            )
-        })
-        persistConfigurationData({ locale: configuration.locale, themeMode: mode })
-        document.dir = direction
-    }
-    const updateLocale = (calendar: Calendar, direction: 'rtl' | 'ltr', reactLocale: Localization) => {
-        const conf = {
-            ...configuration,
-            locale: {
-                ...configuration.locale,
-                direction,
-                code: getLocale(reactLocale),
-                calendar,
-            },
-            themeMode: configuration.theme.palette.mode,
-            theme: createTheme(
-                {
-                    palette: {
-                        mode: configuration.theme.palette.mode,
-                    },
-                    direction: direction
-                },
-                reactLocale
-            )
-        }
-        setConfiguration(conf)
-        i18n.changeLanguage(getLocale(reactLocale))
-        document.dir = direction
-        persistConfigurationData({ locale: conf.locale, themeMode: conf.themeMode })
-    }
-    const updateTimeZone = (zone: TimeZone) => {
-        setConfiguration(
-            {
-                ...configuration,
-                locale: {
-                    ...configuration.locale,
-                    zone: zone
-                }
-            });
-        persistConfigurationData({ locale: { ...configuration.locale, zone: configuration.locale.zone }, themeMode: configuration.themeMode })
-    }
-
-    if (!configuration)
-        return (
-            <>
-                <Stack
-                    spacing={0}
-                    direction="column"
-                    alignItems="center"
-                    justifyContent="center"
-                    sx={{ border: '1px solid black', minHeight: '100vh' }}
-                >
-                    <CircularProgress />
-                </Stack>
-            </>
-        )
+    console.log('App', { nav, theme, configuration, setContent, openDrawer, openSettingsList })
 
     return (
         <>
-            <ConfigurationContext.Provider value={{ get: configuration, set: { updateTheme, updateLocale, updateTimeZone } }}>
-                <CacheProvider value={configuration.locale.direction === 'rtl' ? rtlCache : ltrCache}>
-                    <ThemeProvider theme={configuration.theme}>
-                        <CssBaseline />
+            <Drawer open={openDrawer} onClose={() => setOpenDrawer(false)}>
+                <List>
+                    <ListItemButton onClick={() => { setContent(<Home />); setOpenDrawer(false) }}>
+                        <ListItemIcon>
+                            <HomeOutlined />
+                        </ListItemIcon>
+                        <ListItemText primary={t('home')} />
+                    </ListItemButton>
+                    <ListItemButton onClick={() => setOpenSettingsList(!openSettingsList)}>
+                        <ListItemIcon>
+                            <SettingsOutlined />
+                        </ListItemIcon>
+                        <ListItemText primary={t('settings')} />
+                        {openSettingsList ? <ExpandLess /> : <ExpandMore />}
+                    </ListItemButton>
+                    <Collapse in={openSettingsList} timeout="auto" unmountOnExit>
+                        <List component="div" disablePadding>
+                            <ListItemButton sx={{ pl: 4 }} onClick={() => { setContent(<General />); setOpenDrawer(false) }}>
+                                <ListItemIcon>
+                                    <DisplaySettingsOutlined />
+                                </ListItemIcon>
+                                <ListItemText primary={t("general")} />
+                            </ListItemButton>
+                        </List>
+                    </Collapse>
+                </List>
+            </Drawer>
 
-                        <Drawer open={openDrawer} onClose={() => setOpenDrawer(false)}>
-                            <List>
-                                <ListItemButton onClick={() => { setContent(<Home />); setOpenDrawer(false) }}>
-                                    <ListItemIcon>
-                                        <HomeIcon />
-                                    </ListItemIcon>
-                                    <ListItemText primary={t('home')} />
-                                </ListItemButton>
-                                <ListItemButton onClick={() => setOpenSettingsList(!openSettingsList)}>
-                                    <ListItemIcon>
-                                        <SettingsIcon />
-                                    </ListItemIcon>
-                                    <ListItemText primary={t('settings')} />
-                                    {openSettingsList ? <ExpandLess /> : <ExpandMore />}
-                                </ListItemButton>
-                                <Collapse in={openSettingsList} timeout="auto" unmountOnExit>
-                                    <List component="div" disablePadding>
-                                        <ListItemButton sx={{ pl: 4 }} onClick={() => { setContent(<General />); setOpenDrawer(false) }}>
-                                            <ListItemIcon>
-                                                <DisplaySettingsIcon />
-                                            </ListItemIcon>
-                                            <ListItemText primary={t("general")} />
-                                        </ListItemButton>
-                                    </List>
-                                </Collapse>
-                            </List>
-                        </Drawer>
+            <Grid container sx={{ height: '100%' }}>
+                <Grid item xs={12}>
+                    <MenuBar backgroundColor={theme.palette.background.default} />
+                </Grid>
 
-                        <Stack direction='column' height={'100%'} alignItems='stretch' justifyContent='flex-start'>
-                            <MenuBar backgroundColor={configuration.theme.palette.background.default} />
+                <Grid item xs={12} height={'3rem'}>
+                    <AppBar position='relative'>
+                        <Toolbar variant="dense">
+                            <IconButton size='large' color='inherit' onClick={() => setOpenDrawer(true)} sx={{ mr: 2 }}>
+                                <MenuOutlined fontSize='inherit' />
+                            </IconButton>
+                            <Typography variant='h6' component='div' sx={{ flexGrow: 1 }}>
+                                {/* Title */}
+                                {t('Title')}
+                            </Typography>
+                            <IconButton size='medium' color='inherit' onClick={() => configuration.set.updateTheme(theme.palette.mode == 'dark' ? 'light' : 'dark', configuration.get.locale.direction, getReactLocale(configuration.get.locale.code))}>
+                                {theme.palette.mode == 'light' ? <LightModeOutlined fontSize='inherit' /> : <DarkModeOutlined fontSize='inherit' />}
+                            </IconButton>
+                        </Toolbar>
+                    </AppBar>
+                </Grid>
 
-                            <AppBar position='relative'>
-                                <Toolbar variant="dense">
-                                    <IconButton size='large' color='inherit' onClick={() => setOpenDrawer(true)} sx={{ mr: 2 }}>
-                                        <MenuIcon fontSize='inherit' />
-                                    </IconButton>
-                                    <Typography variant='h6' component='div' sx={{ flexGrow: 1 }}>
-                                        {/* Title */}
-                                    </Typography>
-                                    <IconButton size='medium' color='inherit' onClick={() => updateTheme(configuration.theme.palette.mode == 'dark' ? 'light' : 'dark', configuration.locale.direction, getReactLocale(configuration.locale.code))}>
-                                        {configuration.theme.palette.mode == 'light' ? <LightModeIcon fontSize='inherit' /> : <DarkModeIcon fontSize='inherit' />}
-                                    </IconButton>
-                                </Toolbar>
-                            </AppBar>
-
-                            <Box flexGrow={1}>
-                                {content}
-                            </Box>
-                        </Stack>
-                    </ThemeProvider >
-                </CacheProvider>
-            </ConfigurationContext.Provider>
+                {/* MenuBar ==> 2rem, AppBar ==> 3rem */}
+                <Grid item xs={12} sx={{ height: 'calc(100% - 5rem)', overflowY: 'auto' }}>
+                    {nav?.content}
+                </Grid>
+            </Grid>
         </>
     )
 }
+
