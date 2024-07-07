@@ -8,11 +8,11 @@ export function AppWrappers() {
     return (
         <>
             <ConfigurationContextWrapper>
-                <NavigationContextWrapper>
-                    <ResultContextWrapper>
+                <ResultContextWrapper>
+                    <NavigationContextWrapper>
                         <App />
-                    </ResultContextWrapper>
-                </NavigationContextWrapper>
+                    </NavigationContextWrapper>
+                </ResultContextWrapper>
             </ConfigurationContextWrapper>
         </>
     )
